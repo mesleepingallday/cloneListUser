@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { useState, useEffect } from 'react';
 var dataAPI = "https://raw.githubusercontent.com/tuandq2112/trainning-fe/api/api/user.json";
 var dataUser = [
   {
@@ -68,15 +69,15 @@ function HeaderTable({header}){
 function UserItem({person}){
   return(
     <React.Fragment>
-      <tr className="trData">
+      <tr className="trData" id={person.id}> 
         <td>{person.id}</td>    
         <td>{person.first}</td>    
         <td>{person.last}</td>    
         <td>{person.email}</td>    
         <td>{person.phone}</td>    
         <td>{person.location}</td>
-        <td><button className="editBtn">Edit</button></td>
-        <td><button className="deleteBtn">Delete</button></td>
+        <td><button className="editBtn" id={person.id}>Edit</button></td>
+        <td><button className="deleteBtn" id={person.id}>Delete</button></td>
       </tr>
       <tr><td className="dividerRow"></td></tr>          
       </React.Fragment> 
@@ -84,6 +85,70 @@ function UserItem({person}){
 }
 
 function App() {
+
+  const [data,setData] = useState(dataUser);
+  
+  useEffect(() => {
+
+    const handleEditClick = (id) => {
+        
+      const first = document.getElementById("firstname").value;
+      const last = document.getElementById("lastname").value;
+      const email = document.getElementById("email").value;
+      const phone = document.getElementById("phone").value;
+      const location = document.getElementById("location").value;
+
+      setData(prevData =>
+        prevData.map(item => {
+          if (item.id === id) {
+            return {
+              ...item,
+              first,
+              last,
+              email,
+              phone,
+              location
+            };
+          }
+          return item;
+        })
+      );
+    };   
+
+    const handleDeleteClick = (id) => {
+      setData(prevData => prevData.filter(item => item.id !== id));
+    };
+
+    const handleButtonClick = (event) => {
+      const id = parseInt(event.currentTarget.id);
+      handleDeleteClick(id);
+    };
+
+    const handleButtonClick1 = (event) => {
+      const id = parseInt(event.currentTarget.id);
+      handleEditClick(id);
+    };
+
+    const deleteButtons = document.querySelectorAll(".deleteBtn");
+    deleteButtons.forEach(button => {
+      button.addEventListener("click", handleButtonClick);
+    });
+
+    const editButtons = document.querySelectorAll(".editBtn");
+    editButtons.forEach(button => {
+      button.addEventListener("click", handleButtonClick1);
+    });
+
+    return () => {
+      deleteButtons.forEach(button => {
+        button.removeEventListener("click", handleButtonClick);
+      });
+      editButtons.forEach(button => {
+        button.removeEventListener("click", handleButtonClick1);
+      });
+    };
+  }, []);
+
   return(
     <div className="App">
         <h1 id="heading">THÊM SỬA XÓA VỚI HTML + CSS + JS</h1>
@@ -104,7 +169,7 @@ function App() {
               </thead>
               <tbody id = "data">
                 {
-                  dataUser.map(arr => (
+                  data.map(arr => (
                     <UserItem
                       key={arr.id}
                       person={arr}                
@@ -127,7 +192,6 @@ function App() {
             <input type="number" id="phone" placeholder="+84123465789" /><br />
             <label>Location:</label><br />
             <input type="text" id="location" placeholder="Hanoi, Vietnam" /><br />
-            <button type="button">Thêm</button>
         </form>
         </div>
     </div>
